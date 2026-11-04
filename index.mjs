@@ -1,2 +1,2 @@
-export { ZenFreeAllPlugin } from "./src/zen.mjs";
-export { KiloFreeAllPlugin } from "./src/kilo.mjs";
+// Magpie invokes every exported function as a plugin factory.
+export { OpenAIDecisionsPlugin } from './adapter.mjs';
