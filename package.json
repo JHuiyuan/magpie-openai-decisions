@@ -1,1 +1,30 @@
-{"name":"magpie-openai-decisions","version":"0.1.0","private":true,"description":"Magpie System One adapter for OpenAI Decisions","type":"module","main":"index.mjs","files":["index.mjs","adapter.mjs","README.md","VERIFICATION.md","LICENSE","NOTICE.md"],"license":"MIT","scripts":{"test":"node --test test.mjs","check":"node --check adapter.mjs"},"engines":{"node":">=22"}}
+{
+  "name": "magpie-openai-decisions",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Magpie System One adapter for OpenAI Decisions",
+  "type": "module",
+  "main": "index.mjs",
+  "files": [
+    "index.mjs",
+    "adapter.mjs",
+    "README.md",
+    "VERIFICATION.md",
+    "LICENSE",
+    "NOTICE.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test.mjs",
+    "check": "node --check adapter.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "magpie": {
+    "name": "magpie-openai-decisions"
+  }
+}

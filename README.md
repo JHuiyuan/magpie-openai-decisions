@@ -2,7 +2,7 @@
 
 A decision-only Magpie provider translating System One requests to OpenAI Decisions. Supports intent classification and ordered effort scoring, not chat generation.
 
-Status: validated with offline unit tests, the complete Bun plugin host and an isolated Magpie Go gateway using mock credentials and upstreams. The graphical UI and live OpenAI API remain untested. Not published to npm.
+Status: validated with offline unit tests, the complete Bun plugin host and an isolated Magpie Go gateway using mock credentials and upstreams. A limited live choice integration has also been reported; see VERIFICATION.md for scope. The graphical UI remains untested. Not published to npm.
 
 ## Requirements and installation
 
@@ -61,3 +61,59 @@ Tests use injected fetch and fictional credentials, with no network or real key.
 ## License
 
 MIT. Derived from the Magpie Free Gateways provider interface. Original attribution is retained in LICENSE and NOTICE.md. Unrelated gateway, streaming and tool-handling code is not distributed.
+
+## Integration example and caller fallback
+
+This is a decision adapter, not a chat/completions provider, a budget manager or
+a general implementation of every OpenAI Decisions feature. A System One request
+accepted by the plugin looks like this (transport is managed by Magpie):
+
+```json
+{
+  "model": "gpt-6-luna",
+  "state": {"task": "Summarize a short article"},
+  "questions": {
+    "route": {
+      "type": "choice",
+      "instructions": "Select the best candidate.",
+      "criteria": {"brief": "Short summary", "detailed": "Extended analysis"}
+    }
+  }
+}
+```
+
+The adapter sends a named choice question to OpenAI. A valid upstream answer is
+converted to an answer under answers.route with choice, confidence and a
+probabilities map keyed by brief and detailed. These values come from the
+upstream; the adapter does not manufacture probabilities or calibrate them.
+
+Newer Magpie gateways can expose /v1/decisions and translate through their
+System One provider path. That gateway route is distinct from the plugin's
+internal /systemone interception and OpenAI's /v1/decisions endpoint. Use the
+request format documented by your installed gateway, not this internal example,
+when calling a gateway route directly.
+
+To prefer Decisions with a conventional fallback, the caller must:
+
+1. Define an allowed candidate set and a deterministic default.
+2. Make the decision request with its own deadline and cancellation signal.
+3. Accept only a complete, valid answer naming an allowed candidate.
+4. On timeout, network failure, quota/access errors, refusal or invalid output,
+   use its local rules or configured default.
+
+The plugin fails closed and performs no retry or fallback itself. Magpie's route
+group default behavior depends on the host version and configuration. A caller's
+shorter deadline is separate from the plugin's default 30-second timeout; propagate
+cancellation to avoid leaving an unwanted request running. A timeout is not proof
+that the upstream performed no work or charged no tokens. Credit exhaustion does
+not imply that every 429 is a credit error.
+
+The timeoutMs factory option is for programmatic hosts/tests; no timeout setting
+in Magpie's graphical UI is promised. Never paste a real key into an example.
+
+## Project maintenance
+
+See [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md) and
+[SECURITY.md](SECURITY.md). Issues are disabled; use pull requests for non-sensitive
+fixes. Releases and tags identify reviewed source, not guaranteed compatibility
+with every future Magpie or OpenAI API version.
