@@ -1,119 +1,62 @@
 # Magpie OpenAI Decisions
 
-A decision-only Magpie provider translating System One requests to OpenAI Decisions. Supports intent classification and ordered effort scoring, not chat generation.
+让 Magpie 使用 OpenAI Decisions 判断任务类型、选择候选项或评估任务强度。插件提供的模型是 `openai-decisions/gpt-6-luna`，用于辅助路由，不用于生成聊天回答。
 
-Status: validated with offline unit tests, the complete Bun plugin host and an isolated Magpie Go gateway using mock credentials and upstreams. A limited live choice integration has also been reported; see VERIFICATION.md for scope. The graphical UI remains untested. Not published to npm.
+如果你希望先用 Decisions 判断，再由 Magpie 或自己的程序执行任务，可以使用这个插件。判断失败时，回退到哪个模型或哪套规则，需要由调用方配置。
 
-## Requirements and installation
+## 安装并填写密钥
 
-Use a Magpie version supporting provider decide and model decides fields. Source contract reviewed at e17b6cefc7b25c19d1e522f9e8a9626bf68912d9. Node.js 22+ is required for offline tests; Magpie manages its plugin runtime.
-
-Install from GitHub:
+准备好 Magpie 和可访问 Decisions 的 OpenAI 项目 API key。在终端执行：
 
 ```sh
 magpie plugin add github:JHuiyuan/magpie-openai-decisions
 magpie plugin login openai-decisions
+```
+
+登录时选择 **OpenAI API key**，在 Magpie 中填写密钥。密钥由 Magpie 保存，无需写进插件文件或环境变量。
+
+然后在 Magpie 路由组中，将分类器选为 `openai-decisions/gpt-6-luna`，并检查该路由组的默认模型和失败处理配置。插件会自动声明模型的决策能力，无需手工设置能力字段。
+
+Magpie 的插件运行环境由宿主管理。仅在开发和运行仓库测试时需要 Node.js 22 或更高版本。
+
+## 确认可用
+
+```sh
 magpie plugin --json
 ```
 
-Choose OpenAI API key and enter your existing project key inside Magpie. Select openai-decisions/gpt-6-luna as the routing group classifier. Magpie owns the login form and credential storage. The plugin does not read environment credentials, create keys or write credential files. Never include a key in source, issues or commits.
+检查输出中是否有 `openai-decisions` 供应商和 `gpt-6-luna` 模型。出现模型表示插件已被识别，不代表账户已有 API 权限或可用额度。
 
-Magpie account validation may issue a billable decision probe. Promotional-credit eligibility and API/model access must be checked separately. The plugin does not implement a credit-balance check or spending cap.
+如需验证实际调用，可在 Magpie 中用不含私人信息的小任务检查结果。账户验证或模型检测可能发送真实请求并计费；额度、模型权限和账单以 OpenAI 平台为准。
 
-## Configuration and support
+已验证的范围包括离线插件宿主、隔离网关，以及 Magpie v0.1.3302 的有限候选选择调用。尚未确定最早兼容版本，详细记录见 [验证说明](VERIFICATION.md)。
 
-The upstream is fixed to https://api.openai.com/v1/decisions. Custom origins and organization/project headers are not exposed. Use a project key for the intended project. The default timeout is 30000 ms; plugin options may supply a positive integer timeoutMs.
+## 失败时怎么处理
 
-| System One request | OpenAI question | System One response |
-| --- | --- | --- |
-| noul or predicate | predicate | noul probability |
-| choice with 2-255 string-keyed criteria | choice | choice, confidence, probability map |
-| score with 2-10 ordered nonempty text criteria | score | fractional zero-based score, confidence, probability map |
+插件不会自动重试，也不会替你选择备用模型。它会在超时、网络故障、拒答或响应不合法时报告失败。
 
-State accepts text or a JSON object. Instructions accept text. Question names are preserved; 1-400 questions per request. Usage and cache counts are forwarded without inventing missing values or adding cache counts twice.
+- 使用 Magpie 路由组：确认当前版本和配置中的默认路由行为。
+- 自己编写调用程序：设置超时，校验返回项属于允许的候选集合；失败时转到本地规则或默认模型。
 
-Magpie's reviewed automatic level detection and effort paths both supply four-item score rubrics. Genuine score requests without criteria are rejected. Images, conversation arrays and unknown request fields are unsupported. A refusal, missing answer or malformed probability fails the entire response, rather than silently selecting a route.
+插件默认超时为 30 秒。调用方可以设置更短的等待时间，并传递取消信号。超时不代表上游一定没有处理请求或产生费用。
 
-## Security and failure handling
+## 常见问题
 
-Fixed upstream origin, disabled redirects, no automatic retries. Outbound headers are constructed explicitly rather than forwarded. One deadline covers request parsing, authentication, transport and response parsing; cancellation is isolated per request. HTTP error status is retained, while error bodies and exception details are suppressed. The plugin writes no logs; Magpie and OpenAI have their own storage policies.
+| 现象 | 先检查什么 |
+| --- | --- |
+| 找不到供应商或模型 | 查看上面的插件列表，确认安装成功且 Magpie 支持决策插件 |
+| HTTP 401 / 403 | 密钥、项目和模型访问权限 |
+| HTTP 429 | 限流或额度状态；不能只凭 429 判断额度耗尽 |
+| 取消或超时 | 调用方的等待时间和网络连接 |
+| 不支持的问题或无效响应 | 问题格式、评分标准，以及是否发生拒答；见[接口说明](CONTRIBUTING.md#接口说明) |
 
-## Development
+排查时不要提交真实密钥或私人任务内容。普通修复可提交 Pull Request；敏感问题按[安全说明](SECURITY.md)处理。
 
-No dependencies or install scripts:
+## 进一步阅读
 
-```sh
-node --test test.mjs
-node --check adapter.mjs
-```
+- [接入接口与开发维护](CONTRIBUTING.md)：请求示例、支持范围、测试和版本流程。
+- [验证说明](VERIFICATION.md)：哪些经过测试、哪些只是接口核对。
+- [变更记录](CHANGELOG.md)：版本变化。
+- [来源与署名](NOTICE.md)、[MIT 许可证](LICENSE)。
 
-Tests use injected fetch and fictional credentials, with no network or real key. See VERIFICATION.md for coverage and remaining gaps.
-
-## Troubleshooting
-
-- Provider missing: inspect magpie plugin --json and confirm decision-plugin support.
-- 401/403: check account and model access through Magpie/OpenAI; do not share your key.
-- 429: check API limits and billing; the adapter does not retry.
-- Unsupported question: check the criteria shape above; unbounded scores are deliberately rejected.
-- Cancelled or timed out: check classifier deadline and network availability.
-- Invalid response: a refusal or malformed answer fails closed. Reproduce only with fictional data when filing reports.
-
-## License
-
-MIT. Derived from the Magpie Free Gateways provider interface. Original attribution is retained in LICENSE and NOTICE.md. Unrelated gateway, streaming and tool-handling code is not distributed.
-
-## Integration example and caller fallback
-
-This is a decision adapter, not a chat/completions provider, a budget manager or
-a general implementation of every OpenAI Decisions feature. A System One request
-accepted by the plugin looks like this (transport is managed by Magpie):
-
-```json
-{
-  "model": "gpt-6-luna",
-  "state": {"task": "Summarize a short article"},
-  "questions": {
-    "route": {
-      "type": "choice",
-      "instructions": "Select the best candidate.",
-      "criteria": {"brief": "Short summary", "detailed": "Extended analysis"}
-    }
-  }
-}
-```
-
-The adapter sends a named choice question to OpenAI. A valid upstream answer is
-converted to an answer under answers.route with choice, confidence and a
-probabilities map keyed by brief and detailed. These values come from the
-upstream; the adapter does not manufacture probabilities or calibrate them.
-
-Newer Magpie gateways can expose /v1/decisions and translate through their
-System One provider path. That gateway route is distinct from the plugin's
-internal /systemone interception and OpenAI's /v1/decisions endpoint. Use the
-request format documented by your installed gateway, not this internal example,
-when calling a gateway route directly.
-
-To prefer Decisions with a conventional fallback, the caller must:
-
-1. Define an allowed candidate set and a deterministic default.
-2. Make the decision request with its own deadline and cancellation signal.
-3. Accept only a complete, valid answer naming an allowed candidate.
-4. On timeout, network failure, quota/access errors, refusal or invalid output,
-   use its local rules or configured default.
-
-The plugin fails closed and performs no retry or fallback itself. Magpie's route
-group default behavior depends on the host version and configuration. A caller's
-shorter deadline is separate from the plugin's default 30-second timeout; propagate
-cancellation to avoid leaving an unwanted request running. A timeout is not proof
-that the upstream performed no work or charged no tokens. Credit exhaustion does
-not imply that every 429 is a credit error.
-
-The timeoutMs factory option is for programmatic hosts/tests; no timeout setting
-in Magpie's graphical UI is promised. Never paste a real key into an example.
-
-## Project maintenance
-
-See [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md) and
-[SECURITY.md](SECURITY.md). Issues are disabled; use pull requests for non-sensitive
-fixes. Releases and tags identify reviewed source, not guaranteed compatibility
-with every future Magpie or OpenAI API version.
+本项目从 GitHub 安装，不发布到 npm。它不提供额度查询、消费上限或全部 OpenAI Decisions 功能。

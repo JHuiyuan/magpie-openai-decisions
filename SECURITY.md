@@ -1,23 +1,24 @@
-# Security reporting
+# 安全说明
 
-Never submit credentials, private prompts or exploitable details in public pull
-requests, commit comments or attachments. Issues are disabled and this repository
-does not advertise an enabled private vulnerability reporting channel or a private
-email address.
+## 报告问题
 
-If a sensitive issue needs reporting, use an already established private channel
-to the maintainer if you have one. Otherwise submit only a non-sensitive request
-for a private contact channel in a pull request; withhold technical details until
-the maintainer provides one. There is no guaranteed response time.
+请勿在公开 Pull Request、提交评论或附件中贴出密钥、私人任务内容或可直接利用的漏洞细节。
 
-If a key has been exposed, revoke or rotate it with its issuer. Removing it from
-the current tree does not remove Git history, forks, logs or downloaded copies.
-Do not rewrite shared history without coordination.
+Issues 当前关闭，本仓库尚未确认可用的私密漏洞报告渠道，也没有公布私人联系邮箱。
 
-## Boundaries
+- 如果你已有与维护者的私密联系渠道，请通过该渠道报告。
+- 如果没有，可以提交只请求私密联系方式的 Pull Request。先不要附上敏感细节，等维护者提供渠道后再发送。
 
-The adapter sends the supplied decision state and questions to OpenAI using the
-key managed by Magpie. It fixes the upstream origin, rejects redirects, constructs
-headers explicitly and suppresses upstream error bodies. It does not manage
-credential storage, account spending, host logs or caller fallback policies.
-Offline tests use fictional credentials; passing them is not a security guarantee.
+目前没有承诺响应时间。
+
+## 如果密钥已经泄露
+
+先在密钥所属平台撤销或轮换密钥。只删除当前文件不能清除 Git 历史、fork、日志或已下载副本。需要处理历史时，应先与维护者协调，不要自行强推覆盖共享历史。
+
+## 插件处理哪些数据
+
+插件通过 Magpie 读取密钥，将你提供的任务状态和问题发送到 OpenAI。请只发送你有权交给该服务处理的数据。
+
+插件固定上游地址、禁止重定向、显式构造请求头，并隐藏上游错误正文。它本身不写日志；凭据保存、宿主日志、OpenAI 数据处理和费用控制由对应系统负责。
+
+测试使用虚构密钥和模拟传输。通过测试能说明已检查的行为符合预期，不能代替完整安全审计。测试范围见[验证说明](VERIFICATION.md)。

@@ -1,18 +1,25 @@
-# Changelog
+# 变更记录
 
-## 0.1.1 — 2026-11-08
+## Unreleased
 
-- Clarify installation, protocol examples, caller fallback and timeout ownership.
-- Correct current distribution attribution while retaining MIT copyright notices.
-- Add contribution and security-reporting guidance without assuming Issues or
-  private reporting are enabled.
-- Document compatibility evidence and its limits; no new live API calls.
-- Preserve the existing decision adapter runtime and minimal offline CI permissions.
+- 从头重写中文项目文档，按安装、确认可用、接入、故障处理和维护组织。
+- 将接口字段与源码快照移出安装主流程，明确能力标记由插件自动设置。
+- 区分接口核对记录、离线验证和有限在线证据；保留已发布版本及标签。
+- 仅修改文档，不改变运行时代码和包版本。
 
-## 0.1.0 — 2026-11-04
+## 0.1.1（2026-11-08）
 
-- Introduce the decision-only Magpie provider for gpt-6-luna.
-- Translate predicate, bounded choice and rubric-based score requests.
-- Validate answer completeness and distributions; sanitize failures and propagate
-  cancellation under one deadline.
-- Add offline tests and manual/push/pull-request CI triggers.
+- 补充安装、协议示例、调用方回退责任和超时说明。
+- 修正当前分发内容的来源说明，保留 MIT 署名。
+- 新增贡献与安全报告指南，不假定 Issues 或私密报告已启用。
+- 说明兼容性证据及限制，没有增加真实 API 调用。
+- 保留原有适配逻辑和最小 CI 权限。
+
+[查看 v0.1.1](https://github.com/JHuiyuan/magpie-openai-decisions/releases/tag/v0.1.1)
+
+## 0.1.0（2026-11-04）
+
+- 实现面向 `gpt-6-luna` 的 Magpie 决策供应商。
+- 支持谓词、有限候选选择和带评分标准的分数转换。
+- 校验答案完整性及概率分布，隐藏错误详情，并在统一期限内处理取消。
+- 添加离线测试和 push、Pull Request、手动运行的 CI 入口。

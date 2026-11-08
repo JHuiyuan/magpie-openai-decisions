@@ -1,12 +1,15 @@
-# Attribution
+# 来源与署名
 
-This distribution derives its Magpie provider interface from
-[lesnolie/magpie-free-gateways](https://github.com/lesnolie/magpie-free-gateways).
-That project incorporated code from @magpie-community/opencode-zen-free-auth
-0.1.9, copyright 2026 xiaozhou26, under MIT.
+本项目的 Magpie 供应商接口源自
+[lesnolie/magpie-free-gateways](https://github.com/lesnolie/magpie-free-gateways)。
+该上游项目曾采用 MIT 授权的 `@magpie-community/opencode-zen-free-auth` 0.1.9 代码。
 
-Copyright 2026 lesnolie and copyright 2026 xiaozhou26 are retained in
-[LICENSE](LICENSE). The upstream streaming, tool-response and Zen modules
-(src/stream.mjs, src/tool-response.mjs and src/zen.mjs) are not part of this
-distribution. The current runtime consists of index.mjs and adapter.mjs.
-The Decisions adapter, tests and documentation are maintained in this fork.
+以下版权署名完整保留在 [LICENSE](LICENSE) 中：
+
+- Copyright (c) 2026 lesnolie
+- Copyright (c) 2026 xiaozhou26
+
+当前运行时文件为 `index.mjs` 和 `adapter.mjs`。上游的
+`src/stream.mjs`、`src/tool-response.mjs`、`src/zen.mjs` 不在当前分发中。
+
+本 fork 维护 Decisions 适配器、测试和文档。使用和再分发时，请保留 MIT 许可证及必要版权声明。
